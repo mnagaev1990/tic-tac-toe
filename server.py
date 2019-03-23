@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from threading import Thread
+from json import dumps
+
 from game_server import GameServer
-import json
 
 class MyHandler(BaseHTTPRequestHandler):
 	def __init__(self, gs, *args):
@@ -29,12 +31,12 @@ class MyHandler(BaseHTTPRequestHandler):
 		elif (self.path == "/start_game"):
 			Type = "application/json"
 			num_game = self.gs.NewGame()
-			data = json.dumps(num_game)
+			data = dumps(num_game)
 
 		elif (self.path.split("/")[1] == "step"):
 			result = self.gs.Serve(int(self.path.split("/")[2]), int(self.path.split("/")[3]))
 			Type = "application/json"
-			data = json.dumps(result)
+			data = dumps(result)
 
 		# Запросы на JS
 		elif (self.path.split("/")[1] == "game.js"):
@@ -65,7 +67,15 @@ class http_server:
 		server = HTTPServer(('',80), handler)
 		server.serve_forever()
 
-print "Server started"
-gs = GameServer()
-server = http_server(gs)
 
+if __name__ == "__main__":
+	gs = GameServer()
+	# Create threads
+	thread_gs = Thread(target = gs.Clean)
+	thread_http = Thread(target = http_server, args = (gs, ))
+	# Start threads
+	thread_gs.start()
+	thread_http.start()
+	# Join threads
+	thread_gs.join()
+	thread_http.join()

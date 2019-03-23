@@ -1,8 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import random
-import copy
+from random import randint
+from copy import deepcopy
+from time import sleep, time
+
 
 class color:
 	PURPLE = '\033[95m'
@@ -125,7 +127,7 @@ class Game:
 						return defend_step   
 				
 				elif p1 in self.d1 and p2 in self.d1:
-					d1_ = copy.deepcopy(self.d1)
+					d1_ = deepcopy(self.d1)
 					d1_.remove(p1)
 					d1_.remove(p2)
 					defend_step = d1_[0]
@@ -133,7 +135,7 @@ class Game:
 						return defend_step   
 				
 				elif p1 in self.d2 and p2 in self.d2:
-					d2_ = copy.deepcopy(self.d2)
+					d2_ = deepcopy(self.d2)
 					d2_.remove(p1)
 					d2_.remove(p2)
 					defend_step = d2_[0]
@@ -202,7 +204,7 @@ class Game:
 			
 		#print "power_points: ", power_points
 		max_power = max(power_points.keys())
-		r = random.randint(0, len(power_points[max_power])-1)    
+		r = randint(0, len(power_points[max_power])-1)    
 		return power_points[max_power][r]
 
 	def display(self):
@@ -291,20 +293,32 @@ class Game:
 
 class GameServer:
 	def __init__(self):
+		self.TIME_PERIOD = 30	# Time for game
 		self.num_game = 0
 		self.games  = {}
 
 	def NewGame(self):
 		self.num_game += 1
-		self.games[self.num_game] =  Game()
+		self.games[self.num_game] = (Game(), time() + self.TIME_PERIOD)
 		return self.num_game
 
 	def Serve(self, cur_game, human_step):
-		if self.games.has_key(cur_game) and not self.games[cur_game].end:
+		if self.games.has_key(cur_game) and not self.games[cur_game][0].end:
 			pnt = (human_step/10, human_step%10)
-			result = self.games[cur_game].step(pnt)
+			result = self.games[cur_game][0].step(pnt)
 			return result
 		else:
 			return "Game not founded!"
-		
 
+	def Clean(self):
+		# Delete old game
+		while 1:	
+			game_nums = self.games.keys()
+			for gm in game_nums:
+				if self.games[gm][0].end:
+					self.games.pop(gm)
+					print "Delete ended game №", gm
+				elif time() > self.games[gm][1]:
+					self.games.pop(gm)
+					print "Time is over! Delete game №", gm
+			sleep(1)
