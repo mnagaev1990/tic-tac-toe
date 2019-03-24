@@ -27,6 +27,13 @@ class Game:
 		self.human_points = []
 		self.ai_points = []
 		self.end = False
+
+	def first_step_ai(self):
+		ai_step = (randint(0,2), randint(0,2))
+		self.ai_points.append(ai_step)
+		self.num_points += 1
+		self.display()
+		return "AI Step", self.human_points, self.ai_points
 		
 	def check_win(self, points):
 		rows_fill = [0,0,0]
@@ -304,9 +311,13 @@ class GameServer:
 
 	def Serve(self, cur_game, human_step):
 		if self.games.has_key(cur_game) and not self.games[cur_game][0].end:
-			pnt = (human_step/10, human_step%10)
-			result = self.games[cur_game][0].step(pnt)
-			return result
+			if human_step == None:
+				result = self.games[cur_game][0].first_step_ai()
+				return result
+			elif human_step != None:
+				pnt = (human_step/10, human_step%10)
+				result = self.games[cur_game][0].step(pnt)
+				return result
 		else:
 			return "Game not founded!"
 

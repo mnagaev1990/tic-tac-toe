@@ -18,38 +18,43 @@ class MyHandler(BaseHTTPRequestHandler):
 		if (self.path == "/favicon.ico"):
 			Type = "image/x-icon"
 			f = open('./images/favicon.ico')
-			data = f.read()
+			Data = f.read()
 			f.close()
 
 		# Запросы на HTML
 		elif (self.path == "/"):
 			Type = "text/html"
 			f = open('./html/index.html')
-			data = f.read()
+			Data = f.read()
 			f.close()
 
 		elif (self.path == "/start_game"):
 			Type = "application/json"
 			num_game = self.gs.NewGame()
-			data = dumps(num_game)
+			Data = dumps(num_game)
 
 		elif (self.path.split("/")[1] == "step"):
 			result = self.gs.Serve(int(self.path.split("/")[2]), int(self.path.split("/")[3]))
 			Type = "application/json"
-			data = dumps(result)
+			Data = dumps(result)
+
+		elif (self.path.split("/")[1] == "first_step_ai"):
+			result = self.gs.Serve(int(self.path.split("/")[2]), None)
+			Type = "application/json"
+			Data = dumps(result) 
 
 		# Запросы на JS
 		elif (self.path.split("/")[1] == "game.js"):
 			Type = "script/js"
 			f = open('./js/game.js', 'rb')
-			data = f.read()
+			Data = f.read()
 			f.close()
 		
 		# Запросы CSS
 		elif (self.path.split("/")[1] == "styles.css"):
 			Type = "text/css"
 			f = open('./css/styles.css', 'rb')
-			data = f.read()
+			Data = f.read()
 			f.close()
 
 		else:
@@ -58,7 +63,7 @@ class MyHandler(BaseHTTPRequestHandler):
 		self.send_response(200)
 		self.send_header("Content-type", Type)
 		self.end_headers() 
-		self.wfile.write(data)
+		self.wfile.write(Data)
 
 class http_server:
 	def __init__(self, gs):

@@ -71,6 +71,10 @@ function DisplayLine(type, num) {
 
 function handleNextStep() {
 	if (req.readyState == 4) {
+		elem = document.getElementById("ButtonFirstStepAI")
+		if (elem != null)
+			document.body.removeChild(elem)
+
 		info = JSON.parse(req.responseText)
 		if (Array.isArray(info)) {
 			for (i = 0; i < info[1].length; i++) {
@@ -108,7 +112,7 @@ function handleNextStep() {
 	}
 }
 
-function handleMouseClick(e) {
+function handleCanvasMouseClick(e) {
 	c = document.getElementById("GameField")
 	ctx = c.getContext("2d")
 	rect = c.getBoundingClientRect()
@@ -135,15 +139,18 @@ function handleMouseClick(e) {
 function handleNewGame() {
 	if (req.readyState == 4) {
 		game_number = JSON.parse(req.responseText)
-		elems = document.getElementById("GameField")
-		if (elems != null)
-			document.body.removeChild(elems)
-		elems = document.getElementById("ResultLabel")
-		if (elems != null)
-			document.body.removeChild(elems)
-		elems = document.getElementById("Paragraph")
-		if (elems != null)
-			document.body.removeChild(elems)
+		elem = document.getElementById("GameField")
+		if (elem != null)
+			document.body.removeChild(elem)
+		elem = document.getElementById("ResultLabel")
+		if (elem != null)
+			document.body.removeChild(elem)
+		elem = document.getElementById("Paragraph")
+		if (elem != null)
+			document.body.removeChild(elem)
+		elem = document.getElementById("ButtonFirstStepAI")
+		if (elem != null)
+			document.body.removeChild(elem)
 			
 		// Create BattleField
 		cnv = document.createElement("canvas")
@@ -169,14 +176,30 @@ function handleNewGame() {
 		}
 		ctx.lineWidth = 2
 		ctx.stroke()
-		cnv.addEventListener('click', handleMouseClick, false)
+		cnv.addEventListener('click', handleCanvasMouseClick, false)
+
+		// Create Button: "AI first"
+		btn_ai_start = document.createElement("button")
+		btn_ai_start.id = "ButtonFirstStepAI"
+		btn_ai_start.innerHTML = "ИИ ходи первым!"
+		btn_ai_start.style.cssText = "color: blue; margin: 4px 2px; cursor: pointer; font-size: 32px "
+		btn_ai_start.addEventListener('click', handleButtonFirstStepAI)
+		document.body.appendChild(btn_ai_start)
 	}
 }
 
-function clickBtnStartGame() {
-	// Сформировать запрос на получение номера новой игры
+function handleButtonStartGame() {
+	// Get New Game Number
 	req = new XMLHttpRequest()
 	req.onreadystatechange = handleNewGame
 	req.open('GET', '/start_game')
+	req.send(null)
+}
+
+function handleButtonFirstStepAI() {
+	// First step - AI
+	req = new XMLHttpRequest()
+	req.onreadystatechange = handleNextStep
+	req.open('GET', "/first_step_ai/" + game_number)
 	req.send(null)
 }
